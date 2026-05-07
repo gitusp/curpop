@@ -1,14 +1,67 @@
 import Cocoa
 import QuartzCore
 
-let canvasSize: CGFloat = 560
+func parseHexColor(_ hex: String) -> NSColor? {
+    var s = hex
+    if s.hasPrefix("#") { s.removeFirst() }
+    guard let value = UInt64(s, radix: 16) else { return nil }
+    let r, g, b, a: CGFloat
+    switch s.count {
+    case 6:
+        r = CGFloat((value >> 16) & 0xFF) / 255
+        g = CGFloat((value >> 8) & 0xFF) / 255
+        b = CGFloat(value & 0xFF) / 255
+        a = 1
+    case 8:
+        r = CGFloat((value >> 24) & 0xFF) / 255
+        g = CGFloat((value >> 16) & 0xFF) / 255
+        b = CGFloat((value >> 8) & 0xFF) / 255
+        a = CGFloat(value & 0xFF) / 255
+    default:
+        return nil
+    }
+    return NSColor(red: r, green: g, blue: b, alpha: a)
+}
+
+func printHelp() {
+    let progName = (CommandLine.arguments.first as NSString?)?.lastPathComponent ?? "highlight"
+    print("""
+    Usage: \(progName) [options]
+
+    Draws a comic-style focus burst at the current cursor position.
+
+    Options:
+      --scale <number>  Scale factor (default: 1.0). Scales canvas size,
+                        inner radius, line width, and inner jitter together.
+      --color <hex>     Accent color in #RRGGBB or #RRGGBBAA (default: #000000).
+      -h, --help        Show this help and exit.
+    """)
+}
+
+var scale: CGFloat = 1.0
+var accentColor = NSColor.black
+
+var argIter = CommandLine.arguments.dropFirst().makeIterator()
+while let arg = argIter.next() {
+    switch arg {
+    case "-h", "--help":
+        printHelp()
+        exit(0)
+    case "--scale":
+        if let v = argIter.next(), let n = Double(v), n > 0 { scale = CGFloat(n) }
+    case "--color":
+        if let v = argIter.next(), let c = parseHexColor(v) { accentColor = c }
+    default:
+        break
+    }
+}
+
+let canvasSize: CGFloat = 560 * scale
 let lineCount = 512
-let innerRadius: CGFloat = 44
-let lineBaseWidth: CGFloat = 2
+let innerRadius: CGFloat = 44 * scale
+let lineBaseWidth: CGFloat = 2 * scale
 let frameInterval: TimeInterval = 0.12
 let frameCount = 16
-
-let accentColor = NSColor.black
 
 let app = NSApplication.shared
 app.setActivationPolicy(.accessory)
@@ -48,7 +101,7 @@ view.layer?.addSublayer(lineLayer)
 
 func appendFocusLine(to path: CGMutablePath, angle: CGFloat) {
     let lengthRatio = CGFloat.random(in: 0.78...1.0)
-    let innerJitter = CGFloat.random(in: 0...64)
+    let innerJitter = CGFloat.random(in: 0...(64 * scale))
     let widthRatio = CGFloat.random(in: 0.55...1.25)
     let midBias = CGFloat.random(in: 0.4...0.6)
 

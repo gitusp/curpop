@@ -41,21 +41,33 @@ make install-all        # 両方
 
 ```bash
 ~/.local/bin/highlight
+~/.local/bin/highlight --scale 1.5 --color "#ff3366"
+~/.local/bin/highlight --help
 ```
+
+## コマンドラインオプション
+
+| オプション | デフォルト | 意味 |
+| --- | --- | --- |
+| `--scale <数値>` | `1.0` | 全体スケール。`canvasSize` / `innerRadius` / `lineBaseWidth` / `innerJitter` がまとめて倍率変化する |
+| `--color <hex>` | `#000000` | 集中線の色。`#RRGGBB` または `#RRGGBBAA` |
+| `-h`, `--help` | — | ヘルプを表示して終了 |
+
+Karabiner 側の `shell_command` に追記すれば、ホットキーごとにサイズや色を変えた複数バリエーションも作れる。
 
 ## カスタマイズ
 
-`highlight.swift` 冒頭の定数を変更してリビルド (`make install`) する。
+CLI で渡せない項目は `highlight.swift` 冒頭の定数を変更してリビルド (`make install`) する。
 
 | 定数 | デフォルト | 意味 |
 | --- | --- | --- |
-| `canvasSize` | `280` | 集中線を描く正方形ウィンドウの一辺 (pt) |
-| `lineCount` | `256` | 1 フレームあたりの線の本数 |
-| `innerRadius` | `22` | 中心側の空き半径 (pt)。さらに 0〜32 のランダム揺らぎが加算される |
+| `canvasSize` | `560` | 集中線を描く正方形ウィンドウの一辺 (pt)。`--scale` で倍率変化 |
+| `lineCount` | `512` | 1 フレームあたりの線の本数 |
+| `innerRadius` | `44` | 中心側の空き半径 (pt)。さらに 0〜64 のランダム揺らぎが加算される |
 | `lineBaseWidth` | `2` | 線幅の基準値 (pt)。各線で 0.55〜1.25 倍にゆらぐ |
 | `frameInterval` | `0.12` | フレーム更新間隔 (秒) |
 | `frameCount` | `16` | 総フレーム数。総再生時間は `frameInterval * frameCount` |
-| `accentColor` | `NSColor.black` | 集中線の色 |
+| `accentColor` | `NSColor.black` | 集中線の色のデフォルト。`--color` で上書き |
 
 ## 既知の制約
 
