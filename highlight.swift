@@ -31,15 +31,17 @@ func printHelp() {
     Draws a comic-style focus burst at the current cursor position.
 
     Options:
-      --scale <number>  Scale factor (default: 1.0). Scales canvas size,
-                        inner radius, line width, and inner jitter together.
-      --color <hex>     Accent color in #RRGGBB or #RRGGBBAA (default: #000000).
-      -h, --help        Show this help and exit.
+      --scale <number>     Scale factor (default: 1.0). Scales canvas size,
+                           inner radius, line width, and inner jitter together.
+      --color <hex>        Accent color in #RRGGBB or #RRGGBBAA (default: #000000).
+      --duration <seconds> Total duration of the burst in seconds (default: 1.0).
+      -h, --help           Show this help and exit.
     """)
 }
 
 var scale: CGFloat = 1.0
 var accentColor = NSColor.black
+var duration: TimeInterval = 1.0
 
 var argIter = CommandLine.arguments.dropFirst().makeIterator()
 while let arg = argIter.next() {
@@ -51,6 +53,8 @@ while let arg = argIter.next() {
         if let v = argIter.next(), let n = Double(v), n > 0 { scale = CGFloat(n) }
     case "--color":
         if let v = argIter.next(), let c = parseHexColor(v) { accentColor = c }
+    case "--duration":
+        if let v = argIter.next(), let n = Double(v), n > 0 { duration = n }
     default:
         break
     }
@@ -61,7 +65,7 @@ let lineCount = 512
 let innerRadius: CGFloat = 44 * scale
 let lineBaseWidth: CGFloat = 2 * scale
 let frameInterval: TimeInterval = 0.12
-let frameCount = 16
+let frameCount = max(1, Int((duration / frameInterval).rounded()))
 
 let app = NSApplication.shared
 app.setActivationPolicy(.accessory)
